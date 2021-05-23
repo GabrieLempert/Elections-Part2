@@ -14,7 +14,7 @@ public class Citizen implements Serializable {
 	protected Party chosenParty;
 
 	public Citizen(String name, String id, int yearOfBirth) {
-		this.name = name;
+		this.setName(name);
 		this.id = setId(id);
 		this.yearOfBirth = yearOfBirth;
 		this.ballotBox = null;
@@ -31,7 +31,7 @@ public class Citizen implements Serializable {
 	}
 
 	public Citizen(Citizen copyCitizen) {
-		this.name = copyCitizen.name;
+		this.setName(copyCitizen.name);
 		this.id = setId(copyCitizen.id);
 		this.yearOfBirth = copyCitizen.yearOfBirth;
 		this.ballotBox = copyCitizen.ballotBox;
@@ -58,6 +58,22 @@ public class Citizen implements Serializable {
 
 	public void setChosenParty(Party chosenParty) {
 		this.chosenParty = chosenParty;
+	}
+
+	public String setName(String name) throws IllegalArgumentException {
+		boolean check = true;
+		for (int i = 0; i < name.length(); i++) {
+			if (name.charAt(i) >= '!' && name.charAt(i) <= '@') {
+				check = false;
+			} else if (name.charAt(i) > 'Z' && name.charAt(i) < 'a') {
+				check = false;
+			}
+		}
+		if (check == true) {
+			return this.name = name;
+		} else {
+			throw new IllegalArgumentException();
+		}
 	}
 
 }

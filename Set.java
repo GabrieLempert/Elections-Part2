@@ -1,9 +1,14 @@
 package id_206215311_id_207497561;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Set<T> {
+public class Set<T> implements Serializable {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
 	private ArrayList<T> arr;
 	private int currentSize;
 

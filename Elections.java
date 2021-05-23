@@ -19,8 +19,8 @@ public class Elections implements Serializable {
 	private int partyCounter;
 
 	public Elections(int yearOfElection, int monthOfElection) {
-		this.monthOfElection = monthOfElection;
-		this.yearOfElection = yearOfElection;
+		this.setMonthOfElection(monthOfElection);
+		this.setYearOfElection(yearOfElection);
 		this.voters = new Set<Citizen>();
 		this.ballotBoxes = new ArrayList<ArrayList<BallotBox>>();
 		this.ballotBoxes.add(new ArrayList<BallotBox>());
@@ -272,7 +272,6 @@ public class Elections implements Serializable {
 				int random = (int) (Math.random() * ballotBoxes.get(2).size());
 				voters.get(index).ballotBox = ballotBoxes.get(2).get(random);
 				voter.ballotBox = ballotBoxes.get(2).get(random);
-
 			}
 		}
 		if (voter instanceof CandidateCorona || voter instanceof CitizenCorona) {
@@ -371,5 +370,17 @@ public class Elections implements Serializable {
 		}
 		results();
 		return sb.toString();
+	}
+
+	public void setMonthOfElection(int monthOfElection) {
+		if (monthOfElection > 12 || monthOfElection < 1) {
+			throw new IllegalArgumentException();
+		} else {
+			this.monthOfElection = monthOfElection;
+		}
+	}
+
+	public void setYearOfElection(int yearOfElection) {
+		this.yearOfElection = yearOfElection;
 	}
 }

@@ -35,7 +35,8 @@ public class ElectionsSave implements Serializable {
 	public void addPartyCase(Elections currentElections) {
 		int index = getElectionsIndex(currentElections);
 		System.out.println("Your party name: ");
-		String name = sc.nextLine();
+		String name = "";
+		name += sc.nextLine();
 		System.out.println("Choose your political opinion: ");
 		System.out.println("1.RIGHT");
 		System.out.println("2.CENTER");
@@ -77,7 +78,18 @@ public class ElectionsSave implements Serializable {
 		System.out.println("Number 4: Soldiers Covid ballotbox");
 		System.out.println("Enter your choice must be between 1-3: ");
 		int choice = Integer.parseInt(sc.nextLine());
+		if (choice > 4 || choice < 1) {
+			throw new IllegalArgumentException();
+		}
 		return choice;
+	}
+
+	public void chooseYesOrNo(String choose) throws IllegalArgumentException {
+		if (!(choose.equalsIgnoreCase("no")) && !(choose.equalsIgnoreCase("yes"))) {
+			System.out.println("Invalid!Enter again: ");
+			throw new IllegalArgumentException("You were asked to put yes\no choose again");
+		}
+
 	}
 
 	public int getElectionsIndex(Elections currentElections) {
@@ -91,13 +103,25 @@ public class ElectionsSave implements Serializable {
 	}
 
 	public <T extends Citizen> void addBallotBoxCase(Elections currentElections) {
+		boolean check = true;
 		int index = getElectionsIndex(currentElections);
 		System.out.println("Input address:");
 		String address = "";
 		address += sc.nextLine();
-		int type = Choice();
-		switch (type) {
+		int type = 0;
+		do {
+			try {
+				type = Choice();
+				check = false;
+			} catch (IllegalArgumentException ex) {
+				check = true;
+			}
+		} while (check);
+		switch (type)
+
+		{
 		case 1: {
+
 			BallotBox<Citizen> b = new BallotBox<Citizen>(address);
 			electionSaver.get(index).addBallotBox(b, type);
 			break;
@@ -124,6 +148,8 @@ public class ElectionsSave implements Serializable {
 
 	// addCitizenCase-2
 	public void addCitizenCase(Elections currentElections) {// needs to throw exception if there is no ballotbox;
+		boolean check = true;
+		boolean isQuarineted = false;
 		int index = getElectionsIndex(currentElections);
 		System.out.println("Add your name: ");
 		String name = "";
@@ -135,23 +161,71 @@ public class ElectionsSave implements Serializable {
 		System.out.println("Add you year of birth: ");
 		int yearOfBirth = Integer.parseInt(sc.nextLine());
 		System.out.println("Add if you are ill with corona: ");
-		boolean isQuarineted = sc.nextBoolean();
+		System.out.println("Choose Yes/No");
+		String choose = "";
+		choose += sc.nextLine();
+		do {
+			try {
+				chooseYesOrNo(choose);
+				check = false;
+			} catch (IllegalArgumentException ex) {
+
+				check = true;
+			}
+		} while (check == true);
+
+		if (choose.equalsIgnoreCase("yes")) {
+			isQuarineted = false;
+		}
+		if (choose.equalsIgnoreCase("yes")) {
+			isQuarineted = true;
+		}
 		if (isQuarineted == true) {
 			System.out.println("Enter the number of days you are sick: ");
 			int dayOfCovid = sc.nextInt();
 			if (electionSaver.get(index).getYearOfElection() - yearOfBirth <= 21) {
-				SoldiersCorona newSoldiersCorona = new SoldiersCorona(name, id, yearOfBirth, dayOfCovid);
+				SoldiersCorona newSoldiersCorona = null;
+				do {
+					try {
+						newSoldiersCorona = new SoldiersCorona(name, id, yearOfBirth, dayOfCovid);
+						check = false;
+					} catch (IllegalArgumentException ex) {
+						name = "";
+						name += sc.nextLine();
+						check = true;
+					}
+				} while (check);
 				electionSaver.get(index).addCitizens(newSoldiersCorona);
 				electionSaver.get(index).addBallotBoxToCitizens(newSoldiersCorona);
 				electionSaver.get(index).votersToEachBallotBox();
 
 			}
-			CitizenCorona newCitizenCorona = new CitizenCorona(name, id, yearOfBirth, dayOfCovid);
+			CitizenCorona newCitizenCorona = null;
+			do {
+				try {
+					newCitizenCorona = new CitizenCorona(name, id, yearOfBirth, dayOfCovid);
+					check = false;
+				} catch (IllegalArgumentException ex) {
+					name = "";
+					name += sc.nextLine();
+					check = true;
+				}
+			} while (check);
 			electionSaver.get(index).addCitizens(newCitizenCorona);
 			electionSaver.get(index).addBallotBoxToCitizens(newCitizenCorona);
 			electionSaver.get(index).votersToEachBallotBox();
 		} else {
-			Citizen newCitizen = new Citizen(name, id, yearOfBirth);
+			Citizen newCitizen = null;
+			do {
+				try {
+					newCitizen = new Citizen(name, id, yearOfBirth);
+					check = false;
+				} catch (IllegalArgumentException ex) {
+					name = "";
+					name += sc.nextLine();
+					check = true;
+				}
+			} while (check);
 			electionSaver.get(index).addCitizens(newCitizen);
 			electionSaver.get(index).addBallotBoxToCitizens(newCitizen);
 			electionSaver.get(index).votersToEachBallotBox();
@@ -161,20 +235,19 @@ public class ElectionsSave implements Serializable {
 
 	// idChecker(for user input);
 	public static void checkId(String id) {
-		boolean idChecker = true;
 		try {
-				if (id.isBlank() || id.isEmpty()) {
-					throw new IllegalArgumentException("Can't be blank or empty");
-				} else if (id.length() != 9) {
-					throw new IllegalArgumentException("Needs 9 digits nor less nor more");
-				}
-			} catch (IllegalArgumentException e) {
-
-				System.out.println("Enter id again: ");
-				id = "";
-				id += sc.nextLine();
-				checkId(id);
+			if (id.isBlank() || id.isEmpty()) {
+				throw new IllegalArgumentException("Can't be blank or empty");
+			} else if (id.length() != 9) {
+				throw new IllegalArgumentException("Needs 9 digits nor less nor more");
 			}
+		} catch (IllegalArgumentException e) {
+
+			System.out.println("Enter id again: ");
+			id = "";
+			id += sc.nextLine();
+			checkId(id);
+		}
 
 		try {
 
@@ -190,10 +263,28 @@ public class ElectionsSave implements Serializable {
 			checkId(id);
 		}
 
+	}
 
+	public Elections ElectionsCreator() {
+		Elections e1 = null;
+		boolean check = true;
+		do {
+			try {
+				System.out.println("Set Year: ");
+				int electionYear = Integer.parseInt(sc.nextLine());
+				System.out.println("Set Month: ");
+				int electionMonth = Integer.parseInt(sc.nextLine());
+				e1 = new Elections(electionYear, electionMonth);
+				check = false;
+			} catch (IllegalArgumentException ex) {
+				check = true;
+			}
+		} while (check == true);
+		return e1;
 	}
 
 	public void electionsConducter(Elections elections) {
+		boolean check = true;
 		int index = getElectionsIndex(elections);
 		electionSaver.get(index).votersToEachBallotBox();
 		electionSaver.get(index).electionsCleaner();
@@ -203,10 +294,15 @@ public class ElectionsSave implements Serializable {
 			System.out.println("Choose Yes/No");
 			String temp = "";
 			temp += sc.nextLine();
-			while ((!temp.equalsIgnoreCase("yes")) && (!temp.equalsIgnoreCase("no"))) {
-				System.out.println("There is no such option choose again YES/NO");
-				temp += sc.nextLine();
-			}
+			do {
+				try {
+					chooseYesOrNo(temp);
+					check = false;
+				} catch (IllegalArgumentException ex) {
+
+					check = true;
+				}
+			} while (check);
 			if (temp.equalsIgnoreCase("no")) {
 				Party blankParty = new Party("Blank", PoliticalOpinion.CENTER);
 				electionSaver.get(index).voters.get(i).setChosenParty(blankParty);
@@ -283,6 +379,8 @@ public class ElectionsSave implements Serializable {
 	}
 
 	public void addCandidateCase(Elections currentElections) {
+		boolean check = true;
+		boolean isQuarineted = false;
 		int index = getElectionsIndex(currentElections);
 		System.out.println("Add your name: ");
 		String name = sc.nextLine();
@@ -296,11 +394,28 @@ public class ElectionsSave implements Serializable {
 		System.out.println("Choose party number: ");
 		int candidatePartyNumber = sc.nextInt();
 		System.out.println("Add if you are ill with corona: ");
-		boolean isQuarineted = sc.nextBoolean();
+		System.out.println("Choose Yes/No");
+		String choose = "";
+		choose += sc.nextLine();
+		do {
+			try {
+				chooseYesOrNo(choose);
+				check = false;
+			} catch (IllegalArgumentException ex) {
+				check = true;
+			}
+		} while (check == true);
+		if (choose.equalsIgnoreCase("yes")) {
+			isQuarineted = false;
+		}
+		if (choose.equalsIgnoreCase("yes")) {
+			isQuarineted = true;
+		}
 		if (isQuarineted == true) {
 			System.out.println("Enter the number of days you are sick: ");
 			int dayOfCovid = sc.nextInt();
 			CandidateCorona newCandidateCorona = new CandidateCorona(name, id, yearOfBirth,
+
 					electionSaver.get(index).parties.get(candidatePartyNumber - 1), dayOfCovid);
 			electionSaver.get(index).parties.get(candidatePartyNumber - 1).addCandidate(newCandidateCorona);
 			electionSaver.get(index).addCitizens(newCandidateCorona);

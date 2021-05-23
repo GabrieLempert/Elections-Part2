@@ -9,48 +9,10 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Scanner;
 
-public class ElectionsRunner implements Serializable {
+public class ElectionsRunner implements Serializable, ElectionsUI {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1L;
-
-	public static void saveToFile(ElectionsSave a) throws FileNotFoundException, IOException {
-		ObjectOutputStream o = new ObjectOutputStream(new FileOutputStream(F_NAME));
-		o.writeObject(a);
-		o.close();
-	}
-
-	public static ElectionsSave readFromFile() throws FileNotFoundException, IOException, ClassNotFoundException {
-		ObjectInputStream i = new ObjectInputStream(new FileInputStream(F_NAME));
-		ElectionsSave a = (ElectionsSave) i.readObject();
-		i.close();
-		return a;
-	}
-
-	/**
-	 *
-	 */
 	private static final String F_NAME = "elections.txt";
-	static Scanner sc = new Scanner(System.in);
-
-	public static Elections electionCreator() {
-		System.out.println("Add the election year: ");
-		int electionYear = sc.nextInt();
-		while (electionYear < 2021) {
-			System.out.println("You can only add years that start from 2021 and on");
-			electionYear = sc.nextInt();
-		}
-		System.out.println("Add the election month: ");
-		int electionMonth = sc.nextInt();
-		while (electionMonth > 12 || electionMonth < 1) {
-			System.out.println("There are only 12 months in a year choose again");
-			electionMonth = sc.nextInt();
-		}
-		Elections e1 = new Elections(electionYear, electionMonth);
-		return e1;
-	}
+	private static Scanner sc = new Scanner(System.in);
 
 	public static void printMenu() {
 		System.out.println("Choose between the options: ");
@@ -70,110 +32,218 @@ public class ElectionsRunner implements Serializable {
 
 	}
 
+	private static ElectionsSave e = new ElectionsSave();
+	private static Elections e1;
+
+	public static Elections setE1() {
+		e1 = e.ElectionsCreator();
+		return e1;
+	}
+
+	@Override
+	public void addBallotBox() {
+		e.addBallotBoxCase(e1);
+	}
+
+	@Override
+	public void addCitizen() {
+		e.addCitizenCase(e1);
+	}
+
+	@Override
+	public void addParty() {
+		e.addPartyCase(e1);
+	}
+
+	@Override
+	public void addCandidate() {
+		e.addCandidateCase(e1);
+	}
+
+	@Override
+	public void showBallotBox() {
+		e.electionSaver.get(e.getElectionsIndex(e1)).showBallotBoxes();
+
+	}
+
+	@Override
+	public void showCitizen() {
+		e.electionSaver.get(e.getElectionsIndex(e1)).showCitizens();
+	}
+
+	@Override
+	public void showParties() {
+		e.electionSaver.get(e.getElectionsIndex(e1)).showParties();
+
+	}
+
+	@Override
+	public void startElections() {
+		e.electionsConducter(e.electionSaver.get(e.getElectionsIndex(e1)));
+	}
+
+	@Override
+	public void showResults() {
+		e.electionSaver.get(e.getElectionsIndex(e1)).results();
+	}
+
+	@Override
+	public void RestartElections() {
+		e1 = e.ElectionsCreator();
+		runProgramm();
+	}
+
+	@Override
+	public void exitProgrammAndSaveInFile() {
+		System.out.println("GoodBye, and thank you see in the next election");
+		sc.close();
+		System.out.println("The information has been saved in the file");
+		try {
+			saveToFile(e);
+		} catch (FileNotFoundException ex) {
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
+	}
+
+	@Override
+	public void readFromExistingFile() {
+		try {
+			e = readFromFile();
+		} catch (FileNotFoundException ex) {
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		} catch (ClassNotFoundException ex) {
+			ex.printStackTrace();
+		}
+		System.out.println(e);
+
+	}
+
+	@Override
+	public void runProgramm() {
+		e.addElections(e1);
+		e.addHardCoded();
+
+	}
+
+	private static final long serialVersionUID = 1L;
+
+	public static void saveToFile(ElectionsSave a) throws FileNotFoundException, IOException {
+		ObjectOutputStream o = new ObjectOutputStream(new FileOutputStream(F_NAME));
+		o.writeObject(a);
+		o.close();
+	}
+
+	public static ElectionsSave readFromFile() throws FileNotFoundException, IOException, ClassNotFoundException {
+		ObjectInputStream i = new ObjectInputStream(new FileInputStream(F_NAME));
+		ElectionsSave a = (ElectionsSave) i.readObject();
+		i.close();
+		return a;
+	}
+
 	public static void main(String[] args) {
-		ElectionsSave e = new ElectionsSave();
+		boolean check = true;
+		String choose = null;
 
-			// Elections
-			Elections e1 = electionCreator();
-			e.addElections(e1);
-			e.addHardCoded();
+		ElectionsRunner runner = new ElectionsRunner();
+		System.out.println("Do you want to read from an existing file? ");
+		do {
+			try {
+				choose = "";
+				choose += sc.nextLine();
+				e.chooseYesOrNo(choose);
+				check = false;
+			} catch (IllegalArgumentException ex) {
+				check = true;
+			}
 
-			int choice;
-			do {
-				printMenu();
-				switch (choice = sc.nextInt()) {
-				case 1: {
-					System.out.println("You chose to add a ballotbox");
-					e.addBallotBoxCase(e1);
-					break;
-				}
-				case 2: {
-					System.out.println("You chose to add a citizen");
-					e.addCitizenCase(e1);
-					break;
+		} while (check);
+		if (choose.equalsIgnoreCase("yes")) {
+			runner.readFromExistingFile();
+		}
+		setE1();
+		runner.runProgramm();
 
-				}
-				case 3: {
-					System.out.println("You chose to add a party");
-					e.addPartyCase(e1);
-					System.out.println("You added a new party");
+		int choice;
+		do {
+			printMenu();
+			switch (choice = sc.nextInt()) {
+			case 1: {
+				System.out.println("You chose to add a ballotbox");
+				runner.addBallotBox();
+				break;
+			}
+			case 2: {
+				System.out.println("You chose to add a citizen");
+				runner.addCitizen();
+				break;
 
-				}
-					break;
+			}
+			case 3: {
+				System.out.println("You chose to add a party");
+				runner.addParty();
+				System.out.println("You added a new party");
+			}
+				break;
+			case 4: {
+				System.out.println("You chose to add a candidate");
+				runner.addCandidate();
+			}
+				break;
+			case 5: {
+				runner.showBallotBox();
+			}
+				break;
 
-				case 4: {
-					System.out.println("You chose to add a candidate");
-					e.addCandidateCase(e1);
-				}
-					break;
-				case 5: {
-					e.electionSaver.get(e.getElectionsIndex(e1)).showBallotBoxes();
-				}
-					break;
+			case 6: {
+				runner.showCitizen();
+				break;
+			}
+			case 7: {
+				runner.showParties();
+			}
+				break;
 
-				case 6: {
-					e.electionSaver.get(e.getElectionsIndex(e1)).showCitizens();
+			case 8: {
+				runner.startElections();
+				break;
+			}
+			case 9: {
+				runner.showResults();
+				break;
 
-					break;
-				}
-				case 7: {
-					e.electionSaver.get(e.getElectionsIndex(e1)).showParties();
-				}
-					break;
+			}
+			case 10: {
+				runner.exitProgrammAndSaveInFile();
+				break;
 
-				case 8: {
-					e.electionsConducter(e.electionSaver.get(e.getElectionsIndex(e1)));
+			}
+			case 11: {
+				runner.RestartElections();
+				break;
+			}
+			case 12: {
+				runner.readFromExistingFile();
+			}
+				break;
 
-					break;
-				}
-				case 9: {
-					e.electionSaver.get(e.getElectionsIndex(e1)).results();
-					break;
+			default: {
+				System.out.println("Error!invalid option, Choose again");
+				break;
+			}
+			}
 
-				}
-				case 10: {
-					System.out.println("GoodBye, and thank you see in the next election");
-					sc.close();
-					System.out.println("The information has been saved in the file");
-					try {
-						saveToFile(e);
-					} catch (FileNotFoundException ex) {
-						ex.printStackTrace();
-					} catch (IOException ex) {
-						ex.printStackTrace();
-					}
-					break;
+		} while (choice != 10);
 
-				}
-				case 11: {
-					electionCreator();
-					e.addElections(e1);
-					e.addHardCoded();
-					break;
-				}
-				case 12: {
-					try {
-						e = readFromFile();
-					} catch (FileNotFoundException ex) {
-						ex.printStackTrace();
-					} catch (IOException ex) {
-						ex.printStackTrace();
-					} catch (ClassNotFoundException ex) {
-						ex.printStackTrace();
-					}
-				}
-					System.out.println(e);
-					break;
+	}
 
-				default: {
-					System.out.println("Error!invalid option, Choose again");
-					break;
-				}
-				}
-
-			} while (choice != 10);
-
-
+	@Override
+	public void createElections() {
+		// TODO Auto-generated method stub
 
 	}
 
